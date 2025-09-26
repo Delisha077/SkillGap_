@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📘 Skill Gap Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="header__title">📘 Skill Gap Analyzer</h1>
+            <p class="header__tagline">Bridge the gap between your skills and dream job requirements</p>
+            <div style="margin-top: 16px;">
+                <a class="btn btn--outline" href="{{ url_for('login') }}">Sign In</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Welcome Section -->
+            <section id="welcome-section" class="welcome-section">
+                <div class="welcome-card">
+                    <h2>Why Students Don't Get Internships/Jobs?</h2>
+                    <div class="problem-solution">
+                        <div class="problem">
+                            <h3>🎯 The Problem</h3>
+                            <p>Students struggle to understand why they're not getting internships/jobs. Recruiters look for certain skills, but candidates' resumes often don't highlight them.</p>
+                        </div>
+                        <div class="solution">
+                            <h3>💡 Our Solution</h3>
+                            <p>A tool that compares your resume with job descriptions, shows missing skills, and suggests learning resources to bridge the gap.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn--primary btn--lg" onclick="startAnalysis()">Start Skill Analysis</button>
+                </div>
+            </section>
+
+            <!-- Input Section -->
+            <section id="input-section" class="input-section hidden">
+                <div class="input-grid">
+                    <!-- Resume Input -->
+                    <div class="input-card">
+                        <h3>📄 Your Resume</h3>
+                        <div class="input-tabs">
+                            <button class="tab-btn active" onclick="switchTab('upload')">Upload File</button>
+                            <button class="tab-btn" onclick="switchTab('text')">Paste Text</button>
+                            <button class="tab-btn" onclick="loadSampleResume()">Load Sample</button>
+                        </div>
+                        
+                        <div id="upload-tab" class="tab-content active">
+                            <div class="file-upload">
+                                <input type="file" id="resume-file" accept=".pdf,.doc,.docx,.txt" onchange="handleFileUpload(this)">
+                                <label for="resume-file" class="file-upload-label">
+                                    <span class="upload-icon">📤</span>
+                                    <span class="upload-text">Choose file or drag here</span>
+                                    <span class="upload-formats">Supports PDF, DOC, DOCX, TXT</span>
+                                </label>
+                                <div id="file-name" class="file-name hidden"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="text-tab" class="tab-content">
+                            <textarea id="resume-text" class="form-control resume-textarea" placeholder="Paste your resume content here..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Job Description Input -->
+                    <div class="input-card">
+                        <h3>💼 Job Description</h3>
+                        <div class="input-tabs">
+                            <button class="tab-btn active" onclick="switchJDTab('paste')">Paste JD</button>
+                            <button class="tab-btn" onclick="loadSampleJD()">Load Sample</button>
+                        </div>
+                        
+                        <div id="jd-tab" class="tab-content active">
+                            <textarea id="job-description" class="form-control jd-textarea" placeholder="Paste the job description here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analyze-section">
+                    <button class="btn btn--primary btn--lg btn--full-width" onclick="analyzeSkills()" id="analyze-btn">
+                        <span class="btn-text">🔍 Analyze Skills</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading Section -->
+            <section id="loading-section" class="loading-section hidden">
+                <div class="loading-card">
+                    <div class="loading-spinner"></div>
+                    <h3>Analyzing Your Skills...</h3>
+                    <div class="loading-steps">
+                        <div class="loading-step active" id="step1">
+                            <span class="step-icon">📄</span>
+                            <span class="step-text">Extracting text from resume</span>
+                        </div>
+                        <div class="loading-step" id="step2">
+                            <span class="step-icon">🔍</span>
+                            <span class="step-text">Identifying skills and keywords</span>
+                        </div>
+                        <div class="loading-step" id="step3">
+                            <span class="step-icon">⚖️</span>
+                            <span class="step-text">Comparing with job requirements</span>
+                        </div>
+                        <div class="loading-step" id="step4">
+                            <span class="step-icon">📚</span>
+                            <span class="step-text">Finding learning resources</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="results-section hidden">
+                <div class="results-header">
+                    <h2>📊 Analysis Results</h2>
+                    <div class="results-stats">
+                        <div class="stat">
+                            <span class="stat-number" id="match-percentage">0%</span>
+                            <span class="stat-label">Skills Match</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="skills-found">0</span>
+                            <span class="stat-label">Skills Found</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number" id="skills-missing">0</span>
+                            <span class="stat-label">Skills Missing</span>
+                        </div>
+                    </div>
+                    <button class="btn btn--secondary" onclick="startNewAnalysis()">🔄 New Analysis</button>
+                </div>
+
+                <!-- Skills You Have -->
+                <div class="results-section-block">
+                    <h3 class="section-title section-title--success">✅ Skills You Have</h3>
+                    <div id="matching-skills" class="skills-grid">
+                        <!-- Matching skills will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Missing Skills -->
+                <div class="results-section-block">
+                    <h3 class="section-title section-title--error">❌ Missing Skills</h3>
+                    <div id="missing-skills" class="skills-grid">
+                        <!-- Missing skills will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Recommended Resources -->
+                <div class="results-section-block">
+                    <h3 class="section-title section-title--info">📚 Recommended Learning Resources</h3>
+                    <div id="recommended-resources" class="resources-grid">
+                        <!-- Resources will be populated here -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
+
+
